@@ -1,0 +1,8 @@
+{
+	modules:[
+		{
+			name:'UIInput',
+			class:"com.uzmap.pkg.uzmodules.UIInput.UIInput"
+		}
+	]
+}
