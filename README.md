@@ -40,7 +40,7 @@ UIInput 是一个输入框模块，开发者可通过配置相应参数来控制
 
 模块效果图如下：
 
-![UIInput](/img/docImage/UIInput.jpg)
+![UIInput](http://docs.apicloud.com/img/docImage/UIInput.jpg)
 
 ***本模块源码已开源，地址为：https://github.com/apicloudcom/UIInput***
 #模块接口
