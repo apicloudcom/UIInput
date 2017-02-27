@@ -36,13 +36,14 @@ public class XEditText extends EditText {
 
 		@Override
 		public boolean sendKeyEvent(KeyEvent event) {
+			
 			if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
 				XEditText edit = XEditText.this;
 				
 				if(TextUtils.isEmpty(edit.getText())){
 					return false;
 				}
-
+				
 				char c;
 				if (edit.getSelectionStart() >= edit.getText().length()
 						&& edit.getText().length() > 0) {
@@ -52,7 +53,7 @@ public class XEditText extends EditText {
 					c = edit.getText().charAt(edit.getSelectionStart());
 				}
 
-				if (!isNumeric(c) && !isChinese(c) && !isCharactor(c)) {
+				if (!isNumeric(c) && !isChinese(c) && !isCharactor(c) && c != ' ') {
 					deleteChar(edit);
 				}
 				deleteChar(edit);
@@ -69,8 +70,38 @@ public class XEditText extends EditText {
 
 				return false;
 			}
+			
+			if(event.getKeyCode() == KeyEvent.KEYCODE_0 
+					|| event.getKeyCode() == KeyEvent.KEYCODE_1
+					|| event.getKeyCode() == KeyEvent.KEYCODE_2
+					|| event.getKeyCode() == KeyEvent.KEYCODE_3
+					|| event.getKeyCode() == KeyEvent.KEYCODE_4
+					|| event.getKeyCode() == KeyEvent.KEYCODE_5
+					|| event.getKeyCode() == KeyEvent.KEYCODE_6
+					|| event.getKeyCode() == KeyEvent.KEYCODE_7
+					|| event.getKeyCode() == KeyEvent.KEYCODE_8
+					|| event.getKeyCode() == KeyEvent.KEYCODE_9 ){
+				
+				XEditText edit = XEditText.this;
+				int selectionStartIndex = edit.getSelectionStart();
+				
+				String result = insertChar(edit.getText().toString(), String.valueOf(event.getKeyCode() - 7), selectionStartIndex);
+				edit.setText(result);
+				edit.setSelection(selectionStartIndex + 1);
+				
+			}
+			
 			return super.sendKeyEvent(event);
 		}
+	}
+	
+	
+	public String insertChar(String originalStr, String insertedStr, int index){
+		
+		String frontPart = originalStr.substring(0, index);
+		String leftPart = originalStr.substring(index, originalStr.length());
+		
+		return frontPart + insertedStr + leftPart;
 	}
 
 	public void deleteChar(XEditText edit) {
@@ -94,7 +125,7 @@ public class XEditText extends EditText {
 				sb.deleteCharAt(curCursorIndex);
 				edit.setText(sb.toString());
 				Selection.setSelection(edit.getText(), curCursorIndex);
-
+				
 			}
 
 		}

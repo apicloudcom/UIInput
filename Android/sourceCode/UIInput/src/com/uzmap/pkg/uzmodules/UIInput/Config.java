@@ -98,7 +98,6 @@ public class Config {
 			}
 		}
 		
-
 		if (!uzContext.isNull("placeholder")) {
 			placeHolder = uzContext.optString("placeholder");
 		}
@@ -123,4 +122,5 @@ public class Config {
 			fixed = uzContext.optBoolean("fixed");
 		}
 	}
+	
 }
