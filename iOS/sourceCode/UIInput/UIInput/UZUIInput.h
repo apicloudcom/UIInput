@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 #import "UZModule.h"
+
 @interface UZUIInput : UZModule
 
 @end

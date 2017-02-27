@@ -41,7 +41,7 @@
         }else {
             self.textColor = [UZAppUtils colorFromNSString:@"#000"];
         }
-        
+
         //占位文字颜色
         NSDictionary *placeholder = [styles dictValueForKey:@"placeholder" defaultValue:@{}];
         NSString *placeholderColor = [placeholder stringValueForKey:@"color" defaultValue:@"#ccc"];
@@ -50,25 +50,9 @@
         }else {
             self.placeholderColor = [UZAppUtils colorFromNSString:@"#ccc"];
         }
-        
-        // 监听文字改变
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textDidChange) name:UITextViewTextDidChangeNotification object:nil];
     }
     return self;
-    
-}
 
-- (void)dealloc
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-/**
- * 监听文字改变
- */
-- (void)textDidChange
-{
-    [self setNeedsDisplay];
 }
 
 /**
