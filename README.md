@@ -4,35 +4,26 @@
 
 APICloud 的 UIInput 模块是一个输入框模块，可通过此模块打开一个模块开启键盘状态的输入框。但是由于本模块 UI 布局界面为固定模式，以及支持键盘类型局限，不能满足日益增长的广大开发者对模块样式的需求。因此，原生模块开发者，可以参考此模块的开发方式、接口定义等开发规范，或者基于此模块开发出更多符合产品设计的新 UI 布局的模块，希望此模块能起到抛砖引玉的作用。
 
+## 模块接口文档
 
-/*
-Title: UIInput
-Description: UIInput
-*/
 
-<p style="color: #ccc; margin-bottom: 30px;">来自于：官方</p>
+<p style="color: #ccc; margin-bottom: 30px;">来自于：APICloud 官方</p>
 
 <div class="outline">
-[open](#m1)
 
-[close](#m2)
+[open](#open)
+[close](#close)
+[show](#show)
+[hide](#hide)
+[value](#value)
+[insertValue](#insertValue)
+[popupKeyboard](#popupKeyboard)
+[closeKeyboard](#closeKeyboard)
+[addEventListener](#addEventListener)
 
-[show](#m3)
-
-[hide](#m4)
-
-[value](#m5)
-
-[insertValue](#m6)
-
-[popupKeyboard](#m7)
-
-[closeKeyboard](#m8)
-
-[addEventListener](#m9)
 </div>
 
-#**概述**
+# **模块概述**
 
 某些 App 具有打开某一页面即可默认弹出键盘的功能，如某些登陆授权、评论页面。但是一个纯 html 的输入框标签，无法实现这一功能。为满足 APICloud 平台开发者对这一功能的需求，特推出了 UIInput 模块。
 
@@ -42,8 +33,7 @@ UIInput 是一个输入框模块，开发者可通过配置相应参数来控制
 
 ![UIInput](http://docs.apicloud.com/img/docImage/UIInput.jpg)
 
-***本模块源码已开源，地址为：https://github.com/apicloudcom/UIInput***
-#模块接口
+## 模块接口
 
 **注意：**
 
@@ -51,15 +41,15 @@ UIInput 是一个输入框模块，开发者可通过配置相应参数来控制
 
 2，由于输入法的关系，当 autoFocus 为 true 时部分 android 机型上默认弹不出键盘
 
-<div id="m1"></div>
+<div id="open"></div>
 
-#**open**
+# **open**
 
 打开输入框，**注意：调用 open 接口的元素，不能加 tapmode 属性**
 
-open({params}, callback(ret, err))
+open({params}, callback(ret))
 
-##params
+## params
 
 rect：
 
@@ -128,7 +118,7 @@ fixedOn：
 - 描述：（可选项）模块视图添加到指定 frame 的名字（只指 frame，传 window 无效）
 - 默认：模块依附于当前 window
 
-##callback(ret, err)
+## callback(ret)
 
 ret：
 
@@ -147,7 +137,7 @@ ret：
 }
 ```
 
-##示例代码
+## 示例代码
 
 ```js
 var UIInput = api.require('UIInput');
@@ -180,21 +170,21 @@ UIInput.open({
 });
 ```
 
-##可用性
+## 可用性
 
 iOS系统，Android系统
 
 可提供的1.0.0及更高版本
 
-<div id="m2"></div>
+<div id="close"></div>
 
-#**close**
+# **close**
 
 关闭输入框
 
 close({params})
 
-##**Params**
+## **Params**
 
 id：
 
@@ -202,7 +192,7 @@ id：
 - 描述：需要关闭的输入框id
 
 
-##示例代码
+## 示例代码
 
 ```js
 var UIInput = api.require('UIInput');
@@ -211,21 +201,21 @@ UIInput.close({
 });
 ```
 
-##可用性
+## 可用性
 
 iOS系统，Android系统
 
 可提供的1.0.0及更高版本
 
-<div id="m3"></div>
+<div id="show"></div>
 
-#**show**
+# **show**
 
 显示输入框
 
 show({params})
 
-##**Params**
+## Params
 
 id：
 
@@ -233,7 +223,7 @@ id：
 - 描述：需要展示的输入框id
 
 
-##示例代码
+## 示例代码
 
 ```js
 var UIInput = api.require('UIInput');
@@ -242,21 +232,21 @@ UIInput.show({
 });
 ```
 
-##可用性
+## 可用性
 
 iOS系统，Android系统
 
 可提供的1.0.0及更高版本
 
-<div id="m4"></div>
+<div id="hide"></div>
 
-#**hide**
+# **hide**
 
 隐藏输入框
 
 hide({params})
 
-##**Params**
+## Params
 
 id：
 
@@ -264,7 +254,7 @@ id：
 - 描述：需要隐藏的输入框id
 
 
-##示例代码
+## 示例代码
 
 ```js
 var UIInput = api.require('UIInput');
@@ -273,21 +263,21 @@ UIInput.hide({
 });
 ```
 
-##可用性
+## 可用性
 
 iOS系统，Android系统
 
 可提供的1.0.0及更高版本
 
-<div id="m5"></div>
+<div id="value"></div>
 
-#**value**
+# **value**
 
 获取或设置输入框的内容
 
-value({params}, callback(ret, err))
+value({params}, callback(ret))
 
-##**params**
+## params
 
 
 id：
@@ -300,7 +290,7 @@ msg：
 - 类型：字符串
 - 描述：（可选项）输入框的内容，若不传则返回输入框的值
 
-##callback(ret, err)
+## callback(ret)
 
 ret：
 
@@ -314,7 +304,7 @@ ret：
 }
 ```
 
-##示例代码
+## 示例代码
 
 ```js
 var UIInput = api.require('UIInput');
@@ -331,21 +321,21 @@ UIInput.value(function(ret, err) {
 });
 ```
 
-##可用性
+## 可用性
 
 iOS系统，Android系统
 
 可提供的1.0.0及更高版本
 
-<div id="m6"></div>
+<div id="insertValue"></div>
 
-#**insertValue**
+# **insertValue**
 
 向输入框的指定位置插入内容
 
 insertValue({params})
 
-##**params**
+## params
 
 id：
 
@@ -364,7 +354,7 @@ msg：
 - 描述：（可选项）要插入的内容
 - 默认值：''
 
-##示例代码
+## 示例代码
 
 ```js
 var UIInput = api.require('UIInput');
@@ -374,21 +364,21 @@ UIInput.insertValue({
 });
 ```
 
-##可用性
+## 可用性
 
 iOS系统，Android系统
 
 可提供的1.0.0及更高版本
 
-<div id="m7"></div>
+<div id="popupKeyboard"></div>
 
-#**popupKeyboard**
+# **popupKeyboard**
 
 弹出键盘
 
 popupKeyboard({params})
 
-##**Params**
+## Params
 
 id：
 
@@ -396,7 +386,7 @@ id：
 - 描述：输入框id
 
 
-##示例代码
+## 示例代码
 
 ```js
 var UIInput = api.require('UIInput');
@@ -405,22 +395,22 @@ UIInput.popupKeyboard({
 });
 ```
 
-##可用性
+## 可用性
 
 iOS系统，Android系统
 
 可提供的1.0.0及更高版本
 
-<div id="m8"></div>
+<div id="closeKeyboard"></div>
 
-#**closeKeyboard**
+# **closeKeyboard**
 
 收起键盘
 
 closeKeyboard({params})
 
 
-##**Params**
+## Params
 
 id：
 
@@ -428,7 +418,7 @@ id：
 - 描述：输入框id
 
 
-##示例代码
+## 示例代码
 
 ```js
 var UIInput = api.require('UIInput');
@@ -437,21 +427,21 @@ UIInput.closeKeyboard({
 });
 ```
 
-##可用性
+## 可用性
 
 iOS系统，Android系统
 
 可提供的1.0.0及更高版本
 
-<div id="m9"></div>
+<div id="addEventListener"></div>
 
-#**addEventListener**
+# **addEventListener**
 
 事件监听
 
-addEventListener({params}, callback(ret, err))
+addEventListener({params}, callback(ret))
 
-##**params**
+## params
 
 id：
 
@@ -466,11 +456,20 @@ name：
    - becomeFirstResponder（输入框获得焦点事件）
    - resignFirstResponder（输入框失去焦点事件）
 
-##callback()
+## callback(ret)
 
-触发相应的事件
+ret：
 
-##示例代码
+- 类型：JSON 对象
+- 内部字段：
+
+```js
+{
+      keyboardHeight:216     //数字类型；本参数仅当当 name 为 becomeFirstResponder 时有效，表示弹出的键盘高度
+}
+```
+
+## 示例代码
 
 ```js
 var UIInput = api.require('UIInput');
@@ -481,7 +480,7 @@ UIInput.addEventListener({
 });
 ```
 
-##可用性
+## 可用性
 
 iOS系统，Android系统
 
