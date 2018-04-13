@@ -12,6 +12,7 @@ APICloud 的 UIInput 模块是一个输入框模块，可通过此模块打开�
 <div class="outline">
 
 [open](#open)
+[resetPosition](#resetPosition)
 [close](#close)
 [show](#show)
 [hide](#hide)

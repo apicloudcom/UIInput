@@ -1,25 +1,25 @@
 {
-  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "bb1f6edc-2750-b443-bb15-590855bc9021++5747",
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "bb1f6edc-2750-b443-bb15-590855bc9021",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
-    "bb1f6edc-2750-b443-bb15-590855bc9021++5747" : {
+    "bb1f6edc-2750-b443-bb15-590855bc9021" : {
 
     }
   },
   "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
-    "bb1f6edc-2750-b443-bb15-590855bc9021++5747" : 0
+    "bb1f6edc-2750-b443-bb15-590855bc9021" : 0
   },
   "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "EEC0CDAE-4B11-4809-9BE2-F35EE13E39E0",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
-    "bb1f6edc-2750-b443-bb15-590855bc9021++5747" : "LvChunFeng\/"
+    "bb1f6edc-2750-b443-bb15-590855bc9021" : "uzModules_IOS"
   },
   "DVTSourceControlWorkspaceBlueprintNameKey" : "UIInput",
   "DVTSourceControlWorkspaceBlueprintVersion" : 204,
-  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "ModuleProject\/UIInput\/UIInput.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "trunk\/LiuZhenhua\/uzModulesProjects\/UIInput\/UIInput.xcodeproj",
   "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
     {
-      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/chunfeng.lv@192.168.13.120:4443\/svn\/uzModules_IOS",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/192.168.13.120:4443\/svn\/uzModules_IOS",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
-      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "bb1f6edc-2750-b443-bb15-590855bc9021++5747"
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "bb1f6edc-2750-b443-bb15-590855bc9021"
     }
   ]
 }

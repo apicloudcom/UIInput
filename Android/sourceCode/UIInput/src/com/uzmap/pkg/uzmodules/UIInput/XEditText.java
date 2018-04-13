@@ -16,22 +16,39 @@ import android.view.inputmethod.InputConnectionWrapper;
 import android.widget.EditText;
 
 public class XEditText extends EditText {
+	
+	public int mMaxChars = Integer.MAX_VALUE;
 
 	public static final String TAG = "XEditText";
 
 	public XEditText(Context context) {
 		super(context);
 	}
-
+	
+	public void setMaxChars(int max){
+		this.mMaxChars = max;
+	}
+	
 	@Override
 	public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-		return new ZanyInputConnection(super.onCreateInputConnection(outAttrs),true);
+		return new ZanyInputConnection(this, super.onCreateInputConnection(outAttrs),true);
 	}
+	
 
 	private class ZanyInputConnection extends InputConnectionWrapper {
 
-		public ZanyInputConnection(InputConnection target, boolean mutable) {
+		private XEditText mEditText;
+		public ZanyInputConnection(XEditText editText, InputConnection target, boolean mutable) {
 			super(target, mutable);
+			this.mEditText = editText;
+		}
+
+		@Override
+		public boolean commitText(CharSequence text, int newCursorPosition) {
+			if(mEditText.getText().length() >= mMaxChars){
+				return true;
+			}
+			return super.commitText(text, newCursorPosition);
 		}
 
 		@Override
@@ -59,14 +76,19 @@ public class XEditText extends EditText {
 				deleteChar(edit);
 				return false;
 			}
-
+			
 			if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
 
 				XEditText edit = XEditText.this;
 				String text = edit.getText().toString();
 				String newText = text + "\n";
 				edit.setText(newText);
-				Selection.setSelection(edit.getText(), newText.length());
+				try{
+					Selection.setSelection(edit.getText(), newText.length());
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+				
 
 				return false;
 			}
@@ -87,10 +109,13 @@ public class XEditText extends EditText {
 				
 				String result = insertChar(edit.getText().toString(), String.valueOf(event.getKeyCode() - 7), selectionStartIndex);
 				edit.setText(result);
-				edit.setSelection(selectionStartIndex + 1);
+				try{
+					edit.setSelection(selectionStartIndex + 1);
+				} catch(Exception e){
+					edit.setSelection(edit.getText().length());
+				}
 				
 			}
-			
 			return super.sendKeyEvent(event);
 		}
 	}

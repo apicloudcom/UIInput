@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		7161EEF31B7D9983004B8CEB /* UZUIInput.m in Sources */ = {isa = PBXBuildFile; fileRef = 7161EEF21B7D9983004B8CEB /* UZUIInput.m */; };
-		A2F5D22E1D8795A500A4FDCF /* UZTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F5D22D1D8795A500A4FDCF /* UZTextView.m */; };
+		A20B56B61D923C74009FA77F /* UZTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = A20B56B51D923C74009FA77F /* UZTextView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -27,11 +27,11 @@
 		7161EED71B7D840B004B8CEB /* libUIInput.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libUIInput.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		7161EEF11B7D9983004B8CEB /* UZUIInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UZUIInput.h; sourceTree = "<group>"; };
 		7161EEF21B7D9983004B8CEB /* UZUIInput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UZUIInput.m; sourceTree = "<group>"; };
-		A2F5D2291D87957400A4FDCF /* NSDictionaryUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDictionaryUtils.h; sourceTree = "<group>"; };
-		A2F5D22A1D87957400A4FDCF /* UZAppUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UZAppUtils.h; sourceTree = "<group>"; };
-		A2F5D22B1D87957400A4FDCF /* UZModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UZModule.h; sourceTree = "<group>"; };
-		A2F5D22C1D8795A500A4FDCF /* UZTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UZTextView.h; sourceTree = "<group>"; };
-		A2F5D22D1D8795A500A4FDCF /* UZTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UZTextView.m; sourceTree = "<group>"; };
+		A20B56B41D923C74009FA77F /* UZTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UZTextView.h; sourceTree = "<group>"; };
+		A20B56B51D923C74009FA77F /* UZTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UZTextView.m; sourceTree = "<group>"; };
+		A20B56B81D923CC8009FA77F /* NSDictionaryUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDictionaryUtils.h; sourceTree = "<group>"; };
+		A20B56B91D923CC8009FA77F /* UZAppUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UZAppUtils.h; sourceTree = "<group>"; };
+		A20B56BA1D923CC8009FA77F /* UZModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UZModule.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,7 +48,6 @@
 		7161EECE1B7D840B004B8CEB = {
 			isa = PBXGroup;
 			children = (
-				A2F5D2281D87957400A4FDCF /* HeadFile */,
 				7161EED91B7D840B004B8CEB /* UIInput */,
 				7161EED81B7D840B004B8CEB /* Products */,
 			);
@@ -65,20 +64,21 @@
 		7161EED91B7D840B004B8CEB /* UIInput */ = {
 			isa = PBXGroup;
 			children = (
+				A20B56B71D923CC8009FA77F /* HeadFile */,
+				A20B56B41D923C74009FA77F /* UZTextView.h */,
+				A20B56B51D923C74009FA77F /* UZTextView.m */,
 				7161EEF11B7D9983004B8CEB /* UZUIInput.h */,
 				7161EEF21B7D9983004B8CEB /* UZUIInput.m */,
-				A2F5D22C1D8795A500A4FDCF /* UZTextView.h */,
-				A2F5D22D1D8795A500A4FDCF /* UZTextView.m */,
 			);
 			path = UIInput;
 			sourceTree = "<group>";
 		};
-		A2F5D2281D87957400A4FDCF /* HeadFile */ = {
+		A20B56B71D923CC8009FA77F /* HeadFile */ = {
 			isa = PBXGroup;
 			children = (
-				A2F5D2291D87957400A4FDCF /* NSDictionaryUtils.h */,
-				A2F5D22A1D87957400A4FDCF /* UZAppUtils.h */,
-				A2F5D22B1D87957400A4FDCF /* UZModule.h */,
+				A20B56B81D923CC8009FA77F /* NSDictionaryUtils.h */,
+				A20B56B91D923CC8009FA77F /* UZAppUtils.h */,
+				A20B56BA1D923CC8009FA77F /* UZModule.h */,
 			);
 			path = HeadFile;
 			sourceTree = "<group>";
@@ -139,7 +139,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A2F5D22E1D8795A500A4FDCF /* UZTextView.m in Sources */,
+				A20B56B61D923C74009FA77F /* UZTextView.m in Sources */,
 				7161EEF31B7D9983004B8CEB /* UZUIInput.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -151,6 +151,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+				);
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -184,7 +188,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -193,6 +197,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+				);
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -220,6 +228,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};

@@ -102,5 +102,10 @@
     [self setNeedsDisplay];
 }
 
+//- (void)setSecureTextEntry:(BOOL)secureTextEntry
+//{
+//    [super setSecureTextEntry:secureTextEntry];
+//    [self setNeedsDisplay];
+//}
 
 @end

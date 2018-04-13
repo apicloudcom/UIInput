@@ -9,6 +9,7 @@ package com.uzmap.pkg.uzmodules.UIInput;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,6 +21,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.Selection;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.SparseArray;
@@ -27,10 +29,12 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsoluteLayout;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
@@ -44,12 +48,8 @@ import com.uzmap.pkg.uzcore.uzmodule.UZModule;
 import com.uzmap.pkg.uzcore.uzmodule.UZModuleContext;
 import com.uzmap.pkg.uzkit.UZUtility;
 
+@SuppressWarnings("deprecation")
 public class UIInput extends UZModule {
-
-	private Config mConfig;
-	
-	private static String EVENT_FOCUS_GET  = "becomeFirstResponder";
-	private static String EVENT_FOCUS_LOST = "resignFirstResponder";
 
 	public UIInput(UZWebView webView) {
 		super(webView);
@@ -59,13 +59,17 @@ public class UIInput extends UZModule {
 	private int count = -1;
 	
 	private static final int EDIT_TEXT_ID = 0x100;
+	
 
 	public void jsmethod_open(final UZModuleContext uzContext) {
 		
 		getKeyboardHeight();
-		mConfig = new Config(getContext(), uzContext);
+		final Config mConfig = new Config(getContext(), uzContext);
 		
 		RelativeLayout mContainerLayout = new RelativeLayout(getContext());
+		
+		CallbackContextWrapper wrapper = new CallbackContextWrapper();
+		mContainerLayout.setTag(wrapper);
 		
 		count ++;
 		views.put(count, mContainerLayout);
@@ -83,6 +87,7 @@ public class UIInput extends UZModule {
 		mInputField.setTextSize(mConfig.size);
 		
 		mInputField.setTag(count);
+		
 
 		// set EditText style
 		if (Config.KEYBOARD_DEFAULT.equals(mConfig.keyBoardType)) {
@@ -96,6 +101,19 @@ public class UIInput extends UZModule {
 			mInputField.setInputType(EditorInfo.TYPE_CLASS_TEXT);
 			mInputField.setSingleLine(true);
 		}
+		
+		if (Config.KEYBOARD_SEND.equals(mConfig.keyBoardType)) {
+			mInputField.setImeOptions(EditorInfo.IME_ACTION_SEND);
+			mInputField.setInputType(EditorInfo.TYPE_CLASS_TEXT);
+			mInputField.setSingleLine(true);
+		}
+		
+		if(Config.KEYBOARD_DONE.equals(mConfig.keyBoardType)){
+			mInputField.setImeOptions(EditorInfo.IME_ACTION_DONE);
+			mInputField.setInputType(EditorInfo.TYPE_CLASS_TEXT);
+			mInputField.setSingleLine(true);
+		}
+		
 		if (Config.KEYBOARD_URL.equals(mConfig.keyBoardType)) {
 			mInputField.setImeOptions(EditorInfo.IME_ACTION_NONE);
 		}
@@ -109,11 +127,18 @@ public class UIInput extends UZModule {
 			mInputField.setInputType(EditorInfo.TYPE_CLASS_TEXT);
 			mInputField.setSingleLine(true);
 		}
-
+		
 		mInputField.setBackgroundColor(mConfig.bgColor);
 		mInputField.setTextColor(mConfig.color);
 		mInputField.setHintTextColor(mConfig.placeHolderColor);
 		mInputField.setPadding(UZUtility.dipToPix(5), 0, 0, 0);
+		
+		if(mConfig.maxStringLength <= 0){
+			mInputField.setMaxChars(Integer.MAX_VALUE);
+		} else {
+			mInputField.setMaxChars(mConfig.maxStringLength);
+		}
+		
 
 		mInputField.setHint(mConfig.placeHolder);
 
@@ -123,7 +148,19 @@ public class UIInput extends UZModule {
 		} else {
 			mInputField.setSingleLine(false);
 			mInputField.setMaxLines(mConfig.maxLines);
-			mInputField.setGravity(Gravity.TOP);
+			mInputField.setGravity(Gravity.CENTER_VERTICAL);
+		}
+		
+		if("left".equals(mConfig.alignment)){
+			mInputField.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
+		}
+	
+		if("center".equals(mConfig.alignment)){
+			mInputField.setGravity(Gravity.CENTER | Gravity.CENTER_VERTICAL);
+		}
+	
+		if("right".equals(mConfig.alignment)){
+			mInputField.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
 		}
 		
 		if (mConfig.autoFocus) {
@@ -133,7 +170,11 @@ public class UIInput extends UZModule {
 			// Pop the SoftInputKeyBoard
 			new Handler().postDelayed(new Runnable() {
 				@Override
+				
 				public void run() {
+					if(getContext() == null || getContext().getWindow() == null){
+						return;
+					}
 					getContext().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 					showSoftInputKeyBoard(mInputField);
 				}
@@ -143,9 +184,20 @@ public class UIInput extends UZModule {
 			new Handler().postDelayed(new Runnable() {
 				@Override
 				public void run() {
+					if(getContext() == null || getContext().getWindow() == null){
+						return;
+					}
 					getContext().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 				}
 			}, 300); 
+		}
+		
+		if("password".equals(mConfig.inputType)){
+			mInputField.setSingleLine(true);
+			mInputField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+			
+			Editable etable = mInputField.getText();
+            Selection.setSelection(etable, etable.length());
 		}
 		
 		// ------------ ImageView setting ------------- 
@@ -166,6 +218,17 @@ public class UIInput extends UZModule {
 			
 			@Override
 			public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
+				
+				if(mConfig.maxStringLength > 0 && arg0.length() > mConfig.maxStringLength){
+					try{
+						mInputField.setText(mInputField.getText().subSequence(0, mConfig.maxStringLength));
+						mInputField.setSelection(mInputField.getText().toString().trim().length());
+						
+						return;
+					} catch(Exception e){
+						e.printStackTrace();
+					}
+				}
 				callback(uzContext, (Integer)mInputField.getTag(), Config.EVENT_TEXT_CHANGE, true);
 			}
 
@@ -190,7 +253,6 @@ public class UIInput extends UZModule {
 				}
 				return false;
 			}
-			
 		});
 		
 		mContainerLayout.addView(leftIcon);
@@ -198,13 +260,16 @@ public class UIInput extends UZModule {
 		
 		insertViewToCurWindow(mContainerLayout, params, mConfig.fixedOn, mConfig.fixed);
 		callback(uzContext, count, Config.EVENT_SHOW, true);
-		
 	}
 	
 	public void jsmethod_close(UZModuleContext uzContext) {
 		int id = uzContext.optInt("id");
-		View layout = views.get(id);
+		View layout = views.get(id); 
 		if(layout != null){
+			XEditText mInputField = (XEditText)layout.findViewById(EDIT_TEXT_ID);
+			if(mInputField != null){
+				hideSoftInputKeyBoard(mInputField);
+			}
 			removeViewFromCurWindow(layout);
 		}
 	}
@@ -223,6 +288,28 @@ public class UIInput extends UZModule {
 		if(layout != null){
 			layout.setVisibility(View.VISIBLE);
 		}
+	}
+	
+	public void jsmethod_resetPosition(UZModuleContext uzContext){
+		int id = uzContext.optInt("id");
+		View layout = views.get(id);
+		
+		JSONObject positionObj = uzContext.optJSONObject("position");
+		if(layout != null && positionObj != null){
+			if(layout.getLayoutParams() instanceof MarginLayoutParams){
+				MarginLayoutParams params = (MarginLayoutParams)layout.getLayoutParams();
+				params.leftMargin = UZUtility.dipToPix(positionObj.optInt("x"));
+				params.topMargin = UZUtility.dipToPix(positionObj.optInt("y"));
+				layout.setLayoutParams(params);
+			}
+			if(layout.getLayoutParams() instanceof AbsoluteLayout.LayoutParams){
+				AbsoluteLayout.LayoutParams params = (AbsoluteLayout.LayoutParams)layout.getLayoutParams();
+				params.x = UZUtility.dipToPix(positionObj.optInt("x"));
+				params.y = UZUtility.dipToPix(positionObj.optInt("y"));
+				layout.setLayoutParams(params);
+			}
+		}
+		
 	}
 
 	public void jsmethod_insertValue(UZModuleContext uzContext) {
@@ -260,18 +347,27 @@ public class UIInput extends UZModule {
 		}
 	}
 	
-	public UZModuleContext eventContext;
-	public String eventName;
 	
 	public void jsmethod_addEventListener(UZModuleContext uzContext){
-		eventContext = uzContext;
-		eventName = uzContext.optString("name");
 		
 		int id = uzContext.optInt("id");
 		View layout = views.get(id);
 		if(layout == null){
 			return;
 		}
+		
+		final CallbackContextWrapper wrapper = (CallbackContextWrapper)layout.getTag();
+		
+		final String eventName = uzContext.optString("name");
+		if("becomeFirstResponder".equals(eventName)){
+			wrapper.focusGetCb = uzContext;
+		}
+		
+		if("resignFirstResponder".equals(eventName)){
+			wrapper.focusLostCb = uzContext;
+		}
+		
+		
 		final XEditText mInputField = (XEditText)layout.findViewById(EDIT_TEXT_ID);
 		mInputField.setOnFocusChangeListener(new OnFocusChangeListener() {
 			
@@ -280,30 +376,25 @@ public class UIInput extends UZModule {
 				if (!arg1) {
 					hideSoftInputKeyBoard(mInputField);
 				}
-				
 				new Handler(Looper.getMainLooper()).postDelayed(new Runnable(){
 
 					@Override
 					public void run() {
-						if(eventContext != null && !TextUtils.isEmpty(eventName)){
-							 if(eventName.equals(EVENT_FOCUS_GET) && arg1){
-								 JSONObject ret = new JSONObject();
-								 try {
-									ret.put("keyboardHeight", UZCoreUtil.pixToDip(mKeyboardHeight));
-								} catch (JSONException e) {
-									e.printStackTrace();
-								}		 
-								 eventContext.success(ret, false);
-							 }
-							 
-							 if(eventName.equals(EVENT_FOCUS_LOST) && !arg1){
-								 eventContext.success(new JSONObject(), false);
-							 }
+						if(wrapper.focusGetCb != null && arg1){
+							JSONObject ret = new JSONObject();
+							try {
+								ret.put("keyboardHeight", UZCoreUtil.pixToDip(mKeyboardHeight));
+							} catch (JSONException e) {
+								e.printStackTrace();
+							}		 
+							wrapper.focusGetCb.success(ret, false);
 						 }
+						 
+						if(!arg1 && wrapper.focusLostCb != null){
+							wrapper.focusLostCb.success(new JSONObject(), false);
+						}
 					}
 				}, 300);
-				
-				 
 			}
 		});
 	}
@@ -314,17 +405,19 @@ public class UIInput extends UZModule {
 		View layout = views.get(id);
 
 		if (!uzContext.isNull("h") && layout != null) {
+			CallbackContextWrapper wrapper = (CallbackContextWrapper)layout.getTag();
+			
 			int h = uzContext.optInt("h");
-			RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(mConfig.w, h);
+			RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(wrapper.config.w, h);
 
-			params.leftMargin = UZUtility.dipToPix(mConfig.x);
-			params.topMargin = UZUtility.dipToPix(mConfig.y);
+			params.leftMargin = UZUtility.dipToPix(wrapper.config.x);
+			params.topMargin = UZUtility.dipToPix(wrapper.config.y);
 
 			removeViewFromCurWindow(layout);
-			insertViewToCurWindow(layout, params, mConfig.fixedOn, false);
+			insertViewToCurWindow(layout, params, wrapper.config.fixedOn, false);
 		}
 	}
-
+	
 	public Bitmap getBitmap(String imgPath) {
 		if (TextUtils.isEmpty(imgPath)) {
 			return null;
@@ -380,6 +473,7 @@ public class UIInput extends UZModule {
 		if (mInputField != null && uzContext.isNull("msg")) {
 			callback(uzContext, true, mInputField.getText().toString());
 		}
+		
 	}
 
 	public void callback(UZModuleContext uzContext, boolean status, String msg) {
@@ -481,6 +575,6 @@ public class UIInput extends UZModule {
 		if(mInputField != null){
 			hideSoftInputKeyBoard(mInputField);
 		}
-		
 	}
+	
 }

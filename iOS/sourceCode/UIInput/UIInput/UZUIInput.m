@@ -35,9 +35,20 @@
 
 @property (nonatomic, assign) BOOL flag;
 
+@property (nonatomic, strong)NSMutableDictionary *eventDict;
+
+@property (nonatomic, strong)NSMutableDictionary *maxLengthDict;
+
+@property (nonatomic, assign) BOOL isScroll;
+@property (nonatomic, assign) BOOL isEnd;
+@property (nonatomic, weak) UITextField * currentTextField;
+@property (nonatomic,strong) UIView * textContentView;
+
 @end
 
 @implementation UZUIInput
+
+#pragma mark - lifeCycle -
 
 - (id)initWithUZWebView:(id)webView {
     if (self = [super initWithUZWebView:webView]) {
@@ -66,14 +77,20 @@
     }
 }
 
+#pragma mark - 模块接口
 - (void)open:(NSDictionary *)params_ {
     _inputID++;
+    
     NSInteger openCbId = [params_ integerValueForKey:@"cbId" defaultValue:-1];
     NSString *fixedOn = [params_ stringValueForKey:@"fixedOn" defaultValue:nil];
     BOOL fixed = [params_ boolValueForKey:@"fixed" defaultValue:YES];
     UIView *fatherView = [self getViewByName:fixedOn];
     self.fatherView = fatherView;
-    
+    int maxStringLenth = [params_ intValueForKey:@"maxStringLength" defaultValue:0];
+    if (!self.maxLengthDict) {
+        self.maxLengthDict = [NSMutableDictionary dictionary];
+    }
+    [self.maxLengthDict setObject:@(maxStringLenth) forKey:@(_inputID)];
     //rect
     NSDictionary *rect = [params_ dictValueForKey:@"rect" defaultValue:@{}];
     float frameX,frameY,frameW,frameH;
@@ -87,11 +104,22 @@
     NSString *placeholder = [params_ stringValueForKey:@"placeholder" defaultValue:@""];
     NSString *keyboardType = [params_ stringValueForKey:@"keyboardType" defaultValue:@"default"];
     BOOL autoFocus = [params_ boolValueForKey:@"autoFocus" defaultValue:YES];
-
+    NSString *inputType = [params_ stringValueForKey:@"inputType" defaultValue:@"text"];
+    NSString *alignment = [params_ stringValueForKey:@"alignment" defaultValue:@"left"];
+    
     if (maxRows == 1) {
         UITextField *textField = [self setupTextFieldWithFrame:CGRectMake(frameX, frameY, frameW, frameH) Styles:styles placeholder:placeholder];
+        if ([inputType isEqualToString:@"password"]) {
+           textField.secureTextEntry = YES;
+        }else
+        {
+           textField.secureTextEntry = NO;
+        }
         textField.delegate = self;
+        
         [self.inputDict setObject:textField forKey:@(_inputID)];
+        [self.eventDict setObject:[NSMutableDictionary dictionary] forKey:@(_inputID)];
+        
         [self addSubview:textField fixedOn:fixedOn fixed:fixed];
         
         if ([keyboardType isEqualToString:@"default"]) {
@@ -99,19 +127,51 @@
         }else if ([keyboardType isEqualToString:@"number"]) {
             textField.keyboardType = UIKeyboardTypeNumberPad;
         }else if ([keyboardType isEqualToString:@"search"]) {
-            textField.keyboardType = UIKeyboardTypeWebSearch;
+            textField.returnKeyType = UIReturnKeySearch;
         }else if ([keyboardType isEqualToString:@"next"]) {
             textField.returnKeyType = UIReturnKeyNext;
+        }else if ([keyboardType isEqualToString:@"done"]) {
+            textField.returnKeyType = UIReturnKeyDone;
+        }else if ([keyboardType isEqualToString:@"send"]) {
+            textField.returnKeyType = UIReturnKeySend;
+        }
+        
+        if ([alignment isEqualToString:@"left"]) {
+            textField.textAlignment = NSTextAlignmentLeft;
+        }else if ([alignment isEqualToString:@"center"]) {
+            textField.textAlignment = NSTextAlignmentCenter;
+        }else  {
+            textField.textAlignment = NSTextAlignmentRight;
         }
         
         if (autoFocus) {
             [textField becomeFirstResponder];
         }
+        
+        UIPanGestureRecognizer * pan = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(pan:)];
+        [textField addGestureRecognizer:pan];
+        [textField addTarget:self action:@selector(textFieldChange:) forControlEvents:UIControlEventEditingChanged];
     }else {
         UZTextView *textView = [[UZTextView alloc] initWithFrame:CGRectMake(frameX, frameY, frameW, frameH) styles:styles];
         textView.placeholder = placeholder;
+        
+        if ([inputType isEqualToString:@"password"]) {
+            textView.secureTextEntry = YES;
+        } else {
+            textView.secureTextEntry = NO;
+        }
+        
+        if ([alignment isEqualToString:@"left"]) {
+            textView.textAlignment = NSTextAlignmentLeft;
+        }else if ([alignment isEqualToString:@"center"]) {
+            textView.textAlignment = NSTextAlignmentCenter;
+        }else  {
+            textView.textAlignment = NSTextAlignmentRight;
+        }
         textView.delegate = self;
         [self.inputDict setObject:textView forKey:@(_inputID)];
+        [self.eventDict setObject:[NSMutableDictionary dictionary] forKey:@(_inputID)];
+        
         [self addSubview:textView fixedOn:fixedOn fixed:fixed];
         
         if ([keyboardType isEqualToString:@"default"]) {
@@ -122,11 +182,17 @@
             textView.keyboardType = UIKeyboardTypeWebSearch;
         }else if ([keyboardType isEqualToString:@"next"]) {
             textView.returnKeyType = UIReturnKeyNext;
+        }else if ([keyboardType isEqualToString:@"done"]) {
+            textView.returnKeyType = UIReturnKeyDone;
+        }else if ([keyboardType isEqualToString:@"send"]) {
+            textView.returnKeyType = UIReturnKeySend;
         }
         
         if (autoFocus) {
             [textView becomeFirstResponder];
         }
+        
+  
     }
     [self.keyboardTypeDict setObject:keyboardType forKey:@(_inputID)];
     [self.maxRowsDict setObject:@(maxRows) forKey:@(_inputID)];
@@ -135,9 +201,33 @@
     //callback
     NSMutableDictionary *sendDict = [NSMutableDictionary dictionary];
     [sendDict setObject:@(_inputID) forKey:@"id"];
-    [sendDict setObject:@(YES) forKey:@"status"];
     [sendDict setObject:@"show" forKey:@"eventType"];
+    [sendDict setObject:@(true) forKey:@"status"];
     [self sendResultEventWithCallbackId:openCbId dataDict:sendDict errDict:nil doDelete:NO];
+}
+
+- (void)resetPosition:(NSDictionary *)params_ {
+    NSInteger targetID = [params_ integerValueForKey:@"id" defaultValue:-1];
+    //rect
+    NSDictionary *rect = [params_ dictValueForKey:@"position" defaultValue:@{}];
+    float frameX,frameY;
+    frameX = [rect floatValueForKey:@"x" defaultValue:0];
+    frameY = [rect floatValueForKey:@"y" defaultValue:0];
+    id target = [self.inputDict objectForKey:@(targetID)];
+    if ([target isKindOfClass:[UITextField class]]) {
+        UITextField *textField = (UITextField *)target;
+        CGRect rect = textField.frame;
+        rect.origin.x = frameX;
+        rect.origin.y = frameY;
+        textField.frame = rect;
+    } else {
+        UZTextView *textView = (UZTextView *)target;
+        CGRect rect = textView.frame;
+        rect.origin.x = frameX;
+        rect.origin.y = frameY;
+        textView.frame = rect;
+    }
+    
 }
 
 - (void)close:(NSDictionary *)params_ {
@@ -157,6 +247,7 @@
     UIView *targetView = [_inputDict objectForKey:@(identity)];
     if (targetView) {
         targetView.hidden = YES;
+        [targetView resignFirstResponder];
     }
 }
 
@@ -180,12 +271,12 @@
         textView = (UZTextView *)targetView;
     }
     NSMutableDictionary *sendDict = [NSMutableDictionary dictionary];
-    [sendDict setObject:[NSNumber numberWithBool:YES] forKey:@"status"];
     if (textfield) {
         if (msg) {
             textfield.text = msg;
         }
         if (textfield.text) {
+            [sendDict setObject:@(true) forKey:@"status"];
             [sendDict setObject:textfield.text forKey:@"msg"];
         }
     }else if (textView) {
@@ -193,6 +284,7 @@
             textView.text = msg;
         }
         if (textView.text) {
+            [sendDict setObject:@(true) forKey:@"status"];
             [sendDict setObject:textView.text forKey:@"msg"];
         }
     }
@@ -250,44 +342,78 @@
 }
 
 - (void)addEventListener:(NSDictionary *)params_ {
-    _listenID = [params_ integerValueForKey:@"id" defaultValue:_inputID];
-    _listenCbId = [params_ integerValueForKey:@"cbId" defaultValue:-1];
-    _listenedName = [params_ stringValueForKey:@"name" defaultValue:nil];
+    NSInteger listenID = [params_ integerValueForKey:@"id" defaultValue:_inputID];
+    NSInteger listenCbId = [params_ integerValueForKey:@"cbId" defaultValue:-1];
+    NSString *listenedName = [params_ stringValueForKey:@"name" defaultValue:nil];
+    NSMutableDictionary *tempDict = [self.eventDict objectForKey:@(listenID)];
+    [tempDict setObject:@(listenCbId) forKey:listenedName];
 }
 
-#pragma mark -UITextViewTextDidChangeNotification
+#pragma mark - 输入框文本改变事件
 - (void)textDidChange:(NSNotification *)notification {
+    NSInteger idNumb = 0;
     UIView *targetView = nil;
     if ([notification.object isKindOfClass:[UITextField class]]) {
-        targetView = (UITextField *)notification.object;
+        targetView = (UITextField *)notification.object;for (NSNumber *key in self.inputDict.allKeys) {
+            if ([[self.inputDict objectForKey:key] isEqual:targetView]) {
+                idNumb = [key integerValue];
+            }
+        }
+        int maxStringLenth = [[self.maxLengthDict objectForKey:@(idNumb)]intValue];
+        UITextField *textField = (UITextField *)notification.object;
+        if (maxStringLenth && textField.text.length>maxStringLenth && textField.markedTextRange == nil) {
+            textField.text = [textField.text substringWithRange: NSMakeRange(0, maxStringLenth)];
+            //[[NSNotificationCenter defaultCenter] postNotificationName:@"acceptLimitLength" object: textField];
+        }
     }else {
         targetView = (UZTextView *)notification.object;
+        for (NSNumber *key in self.inputDict.allKeys) {
+            if ([[self.inputDict objectForKey:key] isEqual:targetView]) {
+                idNumb = [key integerValue];
+            }
+        }
+        int maxStringLenth = [[self.maxLengthDict objectForKey:@(idNumb)]intValue];
+        UZTextView *textView = (UZTextView *)notification.object;
+        if (maxStringLenth && textView.text.length>maxStringLenth && textView.markedTextRange == nil) {
+            textView.text = [textView.text substringWithRange: NSMakeRange(0, maxStringLenth)];
+            //[[NSNotificationCenter defaultCenter] postNotificationName:@"acceptLimitLength" object: textField];
+        }
         //控制占位文字
         [targetView setNeedsDisplay];
     }
+   
+    
     //callback
-    NSInteger ID = 0;
-    for (NSNumber *key in self.inputDict.allKeys) {
-        if ([[self.inputDict objectForKey:key] isEqual:targetView]) {
-            ID = [key integerValue];
-        }
-    }
-    NSInteger openCbId = [[self.openCbIdDict objectForKey:@(ID)] integerValue];
-    if (ID > 0 && openCbId >=0) {
-        [self sendResultEventWithCallbackId:openCbId dataDict:@{@"id" : @(ID), @"status" : @(YES), @"eventType" : @"change"} errDict:nil doDelete:NO];
+    NSInteger openCbId = [[self.openCbIdDict objectForKey:@(idNumb)] integerValue];
+    if (idNumb > 0 && openCbId >=0) {
+        [self sendResultEventWithCallbackId:openCbId dataDict:@{@"id" : @(idNumb), @"eventType" : @"change"} errDict:nil doDelete:NO];
     }
 }
 
-#pragma mark -UIKeyboardWillShowNotification
+#pragma mark - 键盘弹入弹出
 - (void)keyboardWillShow:(NSNotification *)notification {
     CGRect keyboardFrame = [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
     NSTimeInterval duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     CGFloat keyboardH = keyboardFrame.size.height;
     
-    UIView *listenedView = [self.inputDict objectForKey:@(_listenID)];
-    if (listenedView && [listenedView isFirstResponder] && _listenCbId >= 0 && [_listenedName isEqualToString:@"becomeFirstResponder"]) {
-        [self sendResultEventWithCallbackId:_listenCbId dataDict:@{@"keyboardHeight" : @(keyboardH)} errDict:nil doDelete:NO];
+    NSInteger objId = -1;
+    for (NSNumber * cbIdNumber in self.inputDict) {
+        UIView *listenedView = [self.inputDict objectForKey:cbIdNumber];
+        if ([listenedView isFirstResponder]) {
+            objId = [cbIdNumber integerValue];
+            break;
+        }
     }
+    if (objId == -1) {
+        return;
+    }
+    NSMutableDictionary *tmpDict = [self.eventDict objectForKey:@(objId)];
+    NSString * targetEventName = @"becomeFirstResponder";
+    NSNumber * cbId = [tmpDict objectForKey:targetEventName];
+    if (cbId) {//监听键盘弹出事件时，回调给前端获取焦点事件
+        [self sendResultEventWithCallbackId:[cbId integerValue] dataDict:@{@"keyboardHeight" : @(keyboardH)}  errDict:nil doDelete:NO];
+    }
+    //弹出键盘后若输入框被键盘遮挡的处理
     for (NSNumber *key in self.inputDict.allKeys) {
         UIView *targetView = [self.inputDict objectForKey:key];
         if (self.fatherView.frame.size.height - CGRectGetMaxY(targetView.frame) < keyboardH && [targetView isFirstResponder] && !self.flag){
@@ -306,7 +432,6 @@
     }
 }
 
-#pragma mark -UIKeyboardWillHideNotification
 - (void)keyboardWillHide:(NSNotification *)notification {
     NSTimeInterval duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     if (self.flag) {
@@ -319,16 +444,28 @@
     }
 }
 
-#pragma mark -UITextViewDelegate
-- (BOOL)textViewShouldEndEditing:(UITextView *)textView {
-    UIView *targetView = [self.inputDict objectForKey:@(_listenID)];
-    if (_listenCbId >=0 && [_listenedName isEqualToString:@"resignFirstResponder"] && [targetView isEqual:textView]) {
-        [self sendResultEventWithCallbackId:_listenCbId dataDict:nil errDict:nil doDelete:NO];
-    }
-    return YES;
-}
+#pragma mark - 多行输入框的代理事件
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
+//    NSString *nowText = textView.text;
+//    NSInteger local = range.location;
+//    NSInteger lenth = range.length;
+//    NSString *newText = text;
+//    NSLog(@"当前文本内容：%@",nowText);
+//    NSLog(@"range的位置：%zi",local);
+//    NSLog(@"range的长度：%zi",lenth);
+//    NSLog(@"新文本内容：%@",newText);
+//    if (maxStringLenth>0 && text.length>0) {
+//        NSInteger nowTextLength = textView.text.length;
+//        if (nowTextLength < maxStringLenth) {
+//            NSInteger addedTextLength = nowTextLength + text.length;
+//            if (addedTextLength>maxStringLenth) {
+//                return NO;
+//            }
+//        } else {
+//            return NO;
+//        }
+//    }
     if ([text isEqualToString:@"\n"]) {
         for (NSNumber *key in self.inputDict.allKeys) {
             if ([[self.inputDict objectForKey:key] isEqual:textView]) {
@@ -340,6 +477,35 @@
                         nextView = [self.inputDict objectForKey:key];
                         [nextView becomeFirstResponder];
                     }
+                } else if ([keyboardType isEqualToString:@"search"]) {
+                    //callback
+                    NSMutableDictionary *sendDict = [NSMutableDictionary dictionary];
+                    NSInteger openCbId = [[self.openCbIdDict objectForKey:key] integerValue];
+                    [sendDict setObject:@(_inputID) forKey:@"id"];
+                    //[sendDict setObject:key forKey:@"id"];
+                    [sendDict setObject:@"search" forKey:@"eventType"];
+                    if (openCbId) {
+                        [self sendResultEventWithCallbackId:openCbId dataDict:sendDict errDict:nil doDelete:NO];
+                    }
+                
+                } else if ([keyboardType isEqualToString:@"send"]) {
+                    //callback
+                    NSMutableDictionary *sendDict = [NSMutableDictionary dictionary];
+                    NSInteger openCbId = [[self.openCbIdDict objectForKey:key] integerValue];
+                    [sendDict setObject:key forKey:@"id"];
+                    [sendDict setObject:@"send" forKey:@"eventType"];
+                    if (openCbId) {
+                        [self sendResultEventWithCallbackId:openCbId dataDict:sendDict errDict:nil doDelete:NO];
+                    }
+                }else if ([keyboardType isEqualToString:@"done"]) {
+                    //callback
+                    NSMutableDictionary *sendDict = [NSMutableDictionary dictionary];
+                    NSInteger openCbId = [[self.openCbIdDict objectForKey:key] integerValue];
+                    [sendDict setObject:key forKey:@"id"];
+                    [sendDict setObject:@"done" forKey:@"eventType"];
+                    if (openCbId) {
+                        [self sendResultEventWithCallbackId:openCbId dataDict:sendDict errDict:nil doDelete:NO];
+                    }
                 }
             }
         }
@@ -347,17 +513,51 @@
     return YES;
 }
 
-#pragma mark -UITextFieldDelegate
-
-- (BOOL)textFieldShouldEndEditing:(UITextField *)textField {
-    UIView *targetView = [self.inputDict objectForKey:@(_listenID)];
-    if (_listenCbId >=0 && [_listenedName isEqualToString:@"resignFirstResponder"] && [targetView isEqual:textField]) {
-        [self sendResultEventWithCallbackId:_listenCbId dataDict:nil errDict:nil doDelete:NO];
+- (BOOL)textViewShouldEndEditing:(UITextView *)textView {
+    NSInteger objId = -1;
+    for (NSNumber * cbIdNumber in self.inputDict) {
+        UITextView * tv = [self.inputDict objectForKey:cbIdNumber];
+        if ([tv isEqual:textView]) {
+            objId = [cbIdNumber integerValue];
+            break;
+        }
+    }
+    if (objId == -1) {
+        return YES;
+    }
+    NSMutableDictionary *tmpDict = [self.eventDict objectForKey:@(objId)];
+    NSString * targetEventName = @"resignFirstResponder";
+    NSNumber * cbId = [tmpDict objectForKey:targetEventName];
+    
+    if (cbId) {
+        [self sendResultEventWithCallbackId:[cbId integerValue] dataDict:nil errDict:nil doDelete:NO];
     }
     return YES;
 }
 
+#pragma mark - 单行输入框的代理事件
+
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+//    NSString *nowText = textField.text;
+//    NSInteger local = range.location;
+//    NSInteger lenth = range.length;
+//    NSString *newText = string;
+//    NSLog(@"textField 当前文本内容：%@",nowText);
+//    NSLog(@"textField range的位置：%zi",local);
+//    NSLog(@"textField range的长度：%zi",lenth);
+//    NSLog(@"textField 新文本内容：%@",newText);
+//    
+//    if (maxStringLenth>0 && string.length>0) {
+//        NSInteger nowTextLength = textField.text.length;
+//        if (nowTextLength < maxStringLenth) {
+//            NSInteger addedTextLength = nowTextLength + string.length;
+//            if (addedTextLength > maxStringLenth) {
+//                return NO;
+//            }
+//        } else {
+//            return NO;
+//        }
+//    }
     if ([string isEqualToString:@"\n"]) {
         for (NSNumber *key in self.inputDict.allKeys) {
             if ([[self.inputDict objectForKey:key] isEqual:textField]) {
@@ -374,9 +574,31 @@
                         //callback
                         NSMutableDictionary *sendDict = [NSMutableDictionary dictionary];
                         NSInteger openCbId = [[self.openCbIdDict objectForKey:key] integerValue];
-                        [sendDict setObject:@(_inputID) forKey:@"id"];
-                        [sendDict setObject:@(YES) forKey:@"status"];
+                        //[sendDict setObject:@(_inputID) forKey:@"id"];
+                        [sendDict setObject:key forKey:@"id"];
                         [sendDict setObject:@"search" forKey:@"eventType"];
+                        if (openCbId) {
+                            [self sendResultEventWithCallbackId:openCbId dataDict:sendDict errDict:nil doDelete:NO];
+                        }
+                    }
+                }else if ([keyboardType isEqualToString:@"send"]) {
+                    if (key) {
+                        //callback
+                        NSMutableDictionary *sendDict = [NSMutableDictionary dictionary];
+                        NSInteger openCbId = [[self.openCbIdDict objectForKey:key] integerValue];
+                        [sendDict setObject:key forKey:@"id"];
+                        [sendDict setObject:@"send" forKey:@"eventType"];
+                        if (openCbId) {
+                            [self sendResultEventWithCallbackId:openCbId dataDict:sendDict errDict:nil doDelete:NO];
+                        }
+                    }
+                }else if ([keyboardType isEqualToString:@"done"]) {
+                    if (key) {
+                        //callback
+                        NSMutableDictionary *sendDict = [NSMutableDictionary dictionary];
+                        NSInteger openCbId = [[self.openCbIdDict objectForKey:key] integerValue];
+                        [sendDict setObject:key forKey:@"id"];
+                        [sendDict setObject:@"done" forKey:@"eventType"];
                         if (openCbId) {
                             [self sendResultEventWithCallbackId:openCbId dataDict:sendDict errDict:nil doDelete:NO];
                         }
@@ -388,8 +610,30 @@
     return YES;
 }
 
+- (BOOL)textFieldShouldEndEditing:(UITextField *)textField {
+    NSInteger objId = -1;
+    for (NSNumber * cbIdNumber in self.inputDict) {
+        UITextField * tf = [self.inputDict objectForKey:cbIdNumber];
+        if ([tf isEqual:textField]) {
+            objId = [cbIdNumber integerValue];
+            break;
+        }
+    }
+    if (objId == -1) {
+        return YES;
+    }
+    NSMutableDictionary *tmpDict = [self.eventDict objectForKey:@(objId)];
+    NSString * targetEventName = @"resignFirstResponder";
+    NSNumber * cbId = [tmpDict objectForKey:targetEventName];
+    
+    if (cbId) {
+        [self sendResultEventWithCallbackId:[cbId integerValue] dataDict:nil errDict:nil doDelete:NO];
+    }
+    
+    return YES;
+}
 
-//setupTextField
+//获取定制的textField
 - (UITextField *)setupTextFieldWithFrame:(CGRect)frame Styles:(NSDictionary *)styles placeholder:(NSString *)placeholder{
     //背景颜色
     UITextField *textField = [[UITextField alloc] initWithFrame:frame];
@@ -425,7 +669,15 @@
     return textField;
 }
 
-//lazy
+#pragma mark - 属性访问器
+
+- (NSMutableDictionary *)eventDict {
+    if (!_eventDict) {
+        _eventDict = [NSMutableDictionary dictionary];
+    }
+    return _eventDict;
+}
+
 - (NSMutableDictionary *)inputDict {
     if (!_inputDict) {
         _inputDict = [NSMutableDictionary dictionary];
@@ -452,6 +704,92 @@
         _keyboardTypeDict = [NSMutableDictionary dictionary];
     }
     return _keyboardTypeDict;
+}
+
+#pragma mark -utility
+
+- (void)pan:(UIPanGestureRecognizer * )pan {
+    UITextField * textField = (UITextField *)pan.view;
+    
+    if (self.currentTextField != textField) {
+        return;
+    }
+    if (textField.text.length == 0) {
+        return;
+    }
+    
+    if (!self.isScroll) {
+        return;
+    }
+    
+    if (self.isEnd) {
+        return;
+    } else {
+        if (self.textContentView.bounds.origin.x < -self.textContentView.superview.bounds.origin.x) {
+            CGRect bounds = CGRectMake(-self.textContentView.superview.bounds.origin.x, self.textContentView.bounds.origin.y,self.textContentView.bounds.size.width, self.textContentView.bounds.size.height);
+            self.textContentView.bounds = bounds;
+            
+            return;
+        }
+        
+        if (self.textContentView.bounds.origin.x > self.textContentView.bounds.size.width - self.textContentView.superview.bounds.origin.x - self.textContentView.superview.bounds.size.width) {
+            CGRect bounds = CGRectMake(self.textContentView.bounds.size.width - self.textContentView.superview.bounds.origin.x - self.textContentView.superview.bounds.size.width, self.textContentView.bounds.origin.y, self.textContentView.bounds.size.width, self.textContentView.bounds.size.height);
+            self.textContentView.bounds = bounds;
+            
+            return;
+        }
+    }
+    
+    if (pan.state == UIGestureRecognizerStateBegan || pan.state == UIGestureRecognizerStateChanged) {
+        
+        CGPoint point = [pan translationInView:pan.view];
+        
+        CGRect bounds = CGRectMake(self.textContentView.bounds.origin.x - point.x, self.textContentView.bounds.origin.y, self.textContentView.bounds.size.width, self.textContentView.bounds.size.height);
+        self.textContentView.bounds = bounds;
+        
+        [pan setTranslation:CGPointZero inView:pan.view];
+    }
+}
+
+- (void)textFieldChange:(UITextField *)textField {
+    if (self.textContentView.bounds.size.width > self.textContentView.superview.bounds.size.width) {
+        self.isScroll = YES;
+    }else{
+        self.isScroll = NO;
+    }
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    self.currentTextField = nil;
+    self.isEnd = YES;
+    CGRect bounds = CGRectMake(0, self.textContentView.bounds.origin.y, self.textContentView.bounds.size.width, self.textContentView.bounds.size.height);
+    self.textContentView.bounds = bounds;
+    self.textContentView = nil;
+}
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField{
+    self.currentTextField = textField;
+    if(@available(iOS 11.0, *)){
+        self.textContentView = [textField valueForKey:@"textContentView"];
+    } else {
+        for (UIView * view in textField.subviews) {
+            if ([view isKindOfClass:NSClassFromString(@"UIFieldEditor")]) {
+                
+                self.textContentView = [view valueForKey:@"contentView"];
+                
+                break;
+            }
+        }
+    }
+    self.isEnd = NO;
+    CGRect bounds = CGRectMake(0, self.textContentView.bounds.origin.y, self.textContentView.bounds.size.width, self.textContentView.bounds.size.height);
+    self.textContentView.bounds = bounds;
+    
+    if (self.textContentView.bounds.size.width > self.textContentView.superview.bounds.size.width) {
+        self.isScroll = YES;
+    }else{
+        self.isScroll = NO;
+    }
 }
 
 @end

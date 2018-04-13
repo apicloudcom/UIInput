@@ -1,0 +1,183 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+		<meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+		<title>Hello APP</title>
+		<link rel="stylesheet" type="text/css" href="../css/api.css" />
+		<style>
+			section {
+				position: relative;
+				top: 200;
+				margin: 8px;
+				background-color: #fff;
+			}
+			h2 {
+				position: relative;
+				height: 44px;
+				line-height: 44px;
+				color: #888;
+			}
+			div {
+				position: relative;
+				height: 56px;
+				margin: 8px;
+				text-align: center;
+				font-size: 12px;
+				line-height: 56px;
+				color: #fff;
+				background-color: #354399;
+				background-clip: padding;
+				box-shadow: 0 0 1px 1px #ccc;
+				border-radius: 2px;
+			}
+			.active {
+				opacity: 0.7;
+			}
+		</style>
+	</head>
+	<body>
+		<section>
+			<h2>输入框模块</h2>
+			<!--<div tapmode="active" onclick="fnPopupKeyboard()">
+				弹出键盘
+			</div>
+			<div tapmode="active" onclick="fnCloseKeyboard()">
+				收起键盘
+			</div>-->
+			<div tapmode="active" onclick="fnOpen()">
+				打开输入框
+			</div>
+			<div tapmode="active" onclick="fnClose()">
+				关闭输入框
+			</div>
+			<div tapmode="active" onclick="fnShow()">
+				显示输入框
+			</div>
+			<div tapmode="active" onclick="fnHide()">
+				隐藏输入框
+			</div>
+			<div tapmode="active" onclick="fnValue()">
+				获取或设置输入框的内容
+			</div>
+			<div tapmode="active" onclick="fnInsertValue()">
+				向输入框的指定位置插入内容
+			</div>
+			<div tapmode="active" onclick="fnAddEventListener()">
+				事件监听
+			</div>
+		</section>
+	</body>
+	<script type="text/javascript" src="../script/api.js"></script>
+	<script type="text/javascript">
+	
+	
+		var mid;
+		var startY = 100;
+		
+		function fnOpen() {
+		
+			var UIInput = api.require('UIInput');
+				UIInput.open({
+					rect: {
+						x: 30,
+						y: startY,
+						w: 200,
+						h: 40
+					},
+					styles: {
+						bgColor: '#CD00CD',
+						size: 14,
+						color: '#B452CD',
+						placeholder: {
+							color: '#000'
+						}
+					},
+					autoFocus: false,
+					maxRows: 4, //支持显示最大行数
+					maxStringLength:10,  //允许输入的最大长度
+					placeholder: '这是一个输入框一起输入吧',  //占位提示文本
+					keyboardType: 'number',  //键盘弹出类型
+					fixedOn: api.frameName,
+					alignment:'left',   //文本对齐方式
+					inputType:'text'    //判断输入框内容是密码还是文字
+				}, function(ret) {		
+					alert(ret.id);
+					if(ret.eventType=='show'){
+						var UIInput = api.require('UIInput');
+						UIInput.addEventListener({
+							id:ret.id,
+							name:'becomeFirstResponder'
+						}, function(ret) {
+							alert('获取焦点');
+						});
+					}
+				});
+				startY += 100;
+		};
+		
+		
+		
+		function fnClose() {
+			var UIInput = api.require('UIInput');
+			UIInput.close({
+				id : mid
+			});
+		};
+		function fnShow() {
+			var UIInput = api.require('UIInput');
+			UIInput.show({
+				id : mid
+			});
+		};
+		function fnHide() {
+			var UIInput = api.require('UIInput');
+			UIInput.hide({
+				id : mid
+			});
+		};
+		function fnValue() {
+			var UIInput = api.require('UIInput');
+			UIInput.value({
+				msg : 'APICloud'
+			});
+			UIInput.value(function(ret, err) {
+				if (ret) {
+					alert(JSON.stringify(ret));
+				} else {
+					alert(JSON.stringify(err));
+				}
+			});
+		};
+		function fnInsertValue() {
+			var UIInput = api.require('UIInput');
+			UIInput.insertValue({
+				id:mid,
+				index : 10,
+				msg : '不错的'
+			});
+		};
+		function fnPopupKeyboard() {
+			var UIInput = api.require('UIInput');
+			UIInput.popupKeyboard({
+				id : mid
+			});
+		};
+		function fnCloseKeyboard() {
+			var UIInput = api.require('UIInput');
+			UIInput.closeKeyboard({
+				id : mid
+			});
+		};
+		
+		function fnAddEventListener() {
+			var UIInput = api.require('UIInput');
+			UIInput.addEventListener({
+				name : 'becomeFirstResponder'
+			}, function(ret) {
+				alert(JSON.stringify(ret));
+			});
+		};
+	</script>
+</html>

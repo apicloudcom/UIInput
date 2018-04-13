@@ -22,6 +22,8 @@ public class Config {
 	public static final String KEYBOARD_URL = "url";
 	public static final String KEYBOARD_EMAIL = "email";
 	public static final String KEYBOARD_NEXT = "next";
+	public static final String KEYBOARD_SEND = "send";
+	public static final String KEYBOARD_DONE = "done";
 
 	public static final String EVENT_SHOW = "show";
 	public static final String EVENT_TEXT_CHANGE = "change";
@@ -49,9 +51,15 @@ public class Config {
 	public String keyBoardType = KEYBOARD_DEFAULT;
 
 	public String fixedOn;
-	public boolean fixed = false;
+	public boolean fixed = true;
 
 	public boolean multiline = false;
+	
+	public String inputType;
+	
+	public int maxStringLength = -1;
+	
+	public String alignment = "left";
 
 	public Config(Context context, UZModuleContext uzContext) {
 
@@ -72,6 +80,8 @@ public class Config {
 				h = rectObj.optInt("h");
 			}
 		}
+		
+		inputType = uzContext.optString("inputType", "text");
 
 		JSONObject stylesObj = uzContext.optJSONObject("styles");
 		if (stylesObj != null) {
@@ -96,7 +106,11 @@ public class Config {
 					placeHolderIcon = placeholderObj.optString("icon");
 				}
 			}
+			
 		}
+		
+		maxStringLength = uzContext.optInt("maxStringLength");
+		alignment = uzContext.optString("alignment", "left");
 		
 		if (!uzContext.isNull("placeholder")) {
 			placeHolder = uzContext.optString("placeholder");
@@ -119,8 +133,7 @@ public class Config {
 		}
 
 		if (!uzContext.isNull("fixed")) {
-			fixed = uzContext.optBoolean("fixed");
+			fixed = uzContext.optBoolean("fixed", true);
 		}
 	}
-	
 }
