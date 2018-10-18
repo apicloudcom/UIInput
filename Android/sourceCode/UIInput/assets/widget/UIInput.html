@@ -38,7 +38,7 @@
 		</style>
 	</head>
 	<body>
-		<section>
+		
 			<h2>输入框模块</h2>
 			<!--<div tapmode="active" onclick="fnPopupKeyboard()">
 				弹出键盘
@@ -67,7 +67,7 @@
 			<div tapmode="active" onclick="fnAddEventListener()">
 				事件监听
 			</div>
-		</section>
+		
 	</body>
 	<script type="text/javascript" src="../script/api.js"></script>
 	<script type="text/javascript">
@@ -84,35 +84,27 @@
 						x: 30,
 						y: startY,
 						w: 200,
-						h: 40
+						h: 80
 					},
 					styles: {
 						bgColor: '#CD00CD',
 						size: 14,
-						color: '#B452CD',
+						color: '#000000',
 						placeholder: {
 							color: '#000'
 						}
 					},
+					maxStringLength:1,
 					autoFocus: false,
 					maxRows: 4, //支持显示最大行数
-					maxStringLength:10,  //允许输入的最大长度
 					placeholder: '这是一个输入框一起输入吧',  //占位提示文本
-					keyboardType: 'number',  //键盘弹出类型
+					keyboardType: 'default',  //键盘弹出类型
+					isCenterVertical:'center',
 					fixedOn: api.frameName,
-					alignment:'left',   //文本对齐方式
+					alignment:'right',   //文本对齐方式
 					inputType:'text'    //判断输入框内容是密码还是文字
 				}, function(ret) {		
-					alert(ret.id);
-					if(ret.eventType=='show'){
-						var UIInput = api.require('UIInput');
-						UIInput.addEventListener({
-							id:ret.id,
-							name:'becomeFirstResponder'
-						}, function(ret) {
-							alert('获取焦点');
-						});
-					}
+					
 				});
 				startY += 100;
 		};

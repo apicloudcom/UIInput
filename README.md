@@ -6,8 +6,7 @@ APICloud 的 UIInput 模块是一个输入框模块，可通过此模块打开�
 
 ## 模块接口文档
 
-
-<p style="color: #ccc; margin-bottom: 30px;">来自于：APICloud 官方</p>
+<p style="color: #ccc; margin-bottom: 30px;">来自于：APICloud 官方<a style="background-color: #95ba20; color:#fff; padding:4px 8px;border-radius:5px;margin-left:30px; margin-bottom:0px; font-size:12px;text-decoration:none;" target="_blank" href="//www.apicloud.com/mod_detail/UIInput">立即使用</a></p>
 
 <div class="outline">
 
@@ -21,8 +20,14 @@ APICloud 的 UIInput 模块是一个输入框模块，可通过此模块打开�
 [popupKeyboard](#popupKeyboard)
 [closeKeyboard](#closeKeyboard)
 [addEventListener](#addEventListener)
+[getSelectedRange](#getSelectedRange)
 
 </div>
+
+# 论坛示例
+
+为帮助用户更好更快的使用模块，论坛维护了一个[示例](https://community.apicloud.com/bbs/thread-109881-1-1.html)，示例中包含示例代码、知识点讲解、注意事项等，供您参考。
+
 
 # **模块概述**
 
@@ -32,9 +37,9 @@ UIInput 是一个输入框模块，开发者可通过配置相应参数来控制
 
 模块效果图如下：
 
-![UIInput](http://docs.apicloud.com/img/docImage/UIInput.jpg)
+<img src="https://docs.apicloud.com/img/docImage/module-doc-img/layout/UIInput/UIInput1.PNG" width=400 />
 
-## 模块接口
+***本模块源码已开源，地址为：https://github.com/apicloudcom/UIInput***
 
 **注意：**
 
@@ -87,13 +92,18 @@ styles：
 maxRows：
 
 - 类型：数字
-- 描述：（可选项）输入框显示的最大行数，**注意：取值大于1（多行显示时），不触发 search 事件回调**
+- 描述：（可选项）支持显示最大行数，文本内容超过此行数时，上下滚动显示。是否支持换行，传大于1的数时表示支持，**注意：取值大于1（多行显示时），不触发 search 事件回调**
 - 默认值：1
 
+maxStringLength：
+
+- 类型：数字
+- 描述：（可选项）输入框允许输入的最大字符串长度
+- 默认值：无限制
 
 autoFocus：
 
-- 类型：布尔类型
+- 类型：布尔
 - 描述：（可选项）打开时是否弹出键盘
 - 默认值：true
 
@@ -110,14 +120,47 @@ keyboardType:
 - 取值范围：
     - default（默认键盘）
     - number（数字键盘）
-    - search（搜索键盘）
-    - next（下一项）
+    - search（搜索键盘，Android只有在单行模式下支持）
+    - next（下一项，Android只有在单行模式下支持）
+    - send（发送，Android只有在单行模式下支持）
+    - done（完成，Android只有在单行模式下支持）
+
+alignment:
+
+- 类型：字符串
+- 描述：（可选项）文本对齐方式
+- 默认值：'left'
+- 取值范围：
+    - left（居左对齐）
+    - center（居中对齐）
+    - right（居右对齐）
+
+isCenterVertical:
+
+- 类型：布尔类型
+- 描述：输入文本是否上下居中
+- 默认：true
+
+inputType:
+
+- 类型：字符串
+- 描述：(可选项) 判断输入框输入的是密码还是文字  
+- 默认值：'text'
+- 取值范围：
+     - password：(密码) 仅当maxRows = 1时支持,
+     - text：(文字)
 
 fixedOn：
 
 - 类型：字符串类型
 - 描述：（可选项）模块视图添加到指定 frame 的名字（只指 frame，传 window 无效）
 - 默认：模块依附于当前 window
+
+fixed:
+
+- 类型：布尔
+- 描述：（可选项）模块是否随所属 window 或 frame 滚动
+- 默认值：true（不随之滚动）
 
 ## callback(ret)
 
@@ -128,13 +171,14 @@ ret：
 
 ```js
 {
-    id:1,			   //数字类型；输入框的id
-    status: true,                  //布尔型；true||false
+    id:1,                          //数字类型；输入框的id
     eventType: 'show'              //字符串类型；交互事件类型，
                                    //取值范围：
                                    //show（模块打开成功）
                                    //change（输入框内容改变）
                                    //search（点击键盘的搜索按钮）
+                                   //send（点击键盘的发送按钮，暂仅支持ios平台）
+                                   //done（点击键盘的确定按钮，暂仅支持ios平台）
 }
 ```
 
@@ -162,12 +206,11 @@ UIInput.open({
 	placeholder: '这是一个输入框',
 	keyboardType: 'number',
 	fixedOn: api.frameName
-}, function(ret, err) {
-	if (ret) {
-		alert(JSON.stringify(ret));
-	} else {
-		alert(JSON.stringify(err));
-	}
+}, function(ret) {
+	if (ret.eventType == 'change') {
+    } else {
+        alert(JSON.stringify(ret));
+    }
 });
 ```
 
@@ -176,6 +219,55 @@ UIInput.open({
 iOS系统，Android系统
 
 可提供的1.0.0及更高版本
+
+<div id="resetPosition"></div>
+
+# **resetPosition**
+
+重设输入框的位置
+
+resetPosition({params})
+
+## params
+
+
+id：
+
+- 类型：数字类型
+- 描述：需要设置的输入框id
+
+position：
+
+- 类型：JSON 对象
+- 描述：（可选项）模块的位置
+- 内部字段：
+
+```js
+{
+    x: 0,   //（可选项）数字类型；模块左上角的 x 坐标（相对于所属的 Window 或 Frame）；默认：0
+    y: 0,   //（可选项）数字类型；模块左上角的 y 坐标（相对于所属的 Window 或 Frame）；默认：0
+}
+```
+
+## 示例代码
+
+```js
+var UIInput = api.require('UIInput');
+UIInput.resetPosition({
+	position: {
+		x: 100,
+		y: 100
+	},
+	id:2
+});
+```
+
+## 可用性
+
+iOS系统，Android系统
+
+可提供的1.0.8及更高版本
+
 
 <div id="close"></div>
 
@@ -300,7 +392,6 @@ ret：
 
 ```js
 {
-    status: true,        //布尔型；true||false
     msg: ''              //字符串类型；输入框当前内容文本
 }
 ```
@@ -313,11 +404,9 @@ UIInput.value({
 	msg: '设置输入框的值'
 });
 
-UIInput.value(function(ret, err) {
+UIInput.value(function(ret) {
 	if (ret) {
 		alert(JSON.stringify(ret));
-	} else {
-		alert(JSON.stringify(err));
 	}
 });
 ```
@@ -486,3 +575,51 @@ UIInput.addEventListener({
 iOS系统，Android系统
 
 可提供的1.0.0及更高版本
+
+
+
+<div id="getSelectedRange"></div>
+
+# **getSelectedRange**
+
+获取当前光标所在位置
+
+getSelectedRange({params},callback(ret))
+
+
+## params
+
+id：
+
+- 类型：数字类型
+- 描述：输入框id
+
+## callback(ret)
+
+ret：
+
+- 类型：JSON 对象
+- 内部字段：
+
+```js
+{
+      location:0,    //数字类型；光标位置
+}
+```
+
+## 示例代码
+
+```js
+var UIInput = api.require('UIInput');
+UIInput.getSelectedRange({
+ id: 0
+}, function(ret) {
+ alert(JSON.stringify(ret));
+});
+```
+
+## 可用性
+
+iOS系统，Android系统
+
+可提供的1.0.9及更高版本

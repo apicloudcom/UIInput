@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <style>
+          body{
+
+          }
+      </style>
+  </head>
+  <body>
+  
+  	<button onclick="rePosition()"> rePosition </button>
+
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript">
+  
+      var inputId;
+	
+      apiready = function(){
+        var UIInput = api.require('UIInput');
+        UIInput.open({
+            rect: {
+                x: 0,
+                y: 40,
+                w: api.winWidth,
+                h: 40
+            },
+            styles: {
+                bgColor: '#ff4d00',
+                size: 14,
+                color: '#000',
+                placeholder: {
+                    color: '#ccc'
+                }
+            },
+            autoFocus: false,
+            maxRows: 1,
+            placeholder: '这是一个输入框',
+            maxStringLength: 5,
+            // keyboardType: 'done',
+            fixedOn: api.frameName
+        }, function(ret) {
+        	if(ret.eventType == 'show'){
+        		inputId = ret.id;
+        	}
+            if (ret.eventType == 'change') {
+            } else {
+                // alert(JSON.stringify(ret));
+            }
+        });
+
+        UIInput.open({
+            rect: {
+                x: 0,
+                y: 100,
+                w: api.winWidth,
+                h: 40
+            },
+            styles: {
+                bgColor: '#ff4d00',
+                size: 14,
+                color: '#000',
+                placeholder: {
+                    color: '#ccc'
+                }
+            },
+            autoFocus: false,
+            maxRows: 1,
+            placeholder: '这是一个输入框',
+            maxStringLength: 3,
+            // keyboardType: 'done',
+            fixedOn: api.frameName
+        }, function(ret) {
+            if (ret.eventType == 'change') {
+            } else {
+                // alert(JSON.stringify(ret));
+            }
+        });
+      };
+      
+      
+      function rePosition(){
+        var UIInput = api.require('UIInput');
+      	UIInput.resetPosition({
+            id:inputId,
+            position:{
+                x:0,
+                y:api.frameHeight - 40
+            }
+        })
+      }
+  </script>
+  </html>

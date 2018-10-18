@@ -1,7 +1,7 @@
 
 /**
   * APICloud Modules
-  * Copyright (c) 2014-2015 by APICloud, Inc. All Rights Reserved.
+  * Copyright (c) 2014-2018 by APICloud, Inc. All Rights Reserved.
   * Licensed under the terms of the The MIT License (MIT).
   * Please see the license.html included with this distribution for details.
   */
@@ -348,7 +348,33 @@
     NSMutableDictionary *tempDict = [self.eventDict objectForKey:@(listenID)];
     [tempDict setObject:@(listenCbId) forKey:listenedName];
 }
-
+- (void)getSelectedRange:(NSDictionary *)params_ {
+    NSInteger getSelectedRangeCbId = [params_ integerValueForKey:@"cbId" defaultValue:-1];
+    NSInteger identity = [params_ integerValueForKey:@"id" defaultValue:_inputID];
+    
+    if ([[_maxRowsDict objectForKey:@(identity)] integerValue] == 1) {
+        UITextField *textfield = (UITextField *)[_inputDict objectForKey:@(identity)];
+        [self sendResultEventWithCallbackId:getSelectedRangeCbId dataDict:@{@"location":@([self selectedRange:textfield].location)} errDict:nil doDelete:YES];
+    }else {
+        UZTextView *targetView = (UZTextView *)[_inputDict objectForKey:@(identity)];
+        [self sendResultEventWithCallbackId:getSelectedRangeCbId dataDict:@{@"location":@(targetView.selectedRange.location)} errDict:nil doDelete:YES];
+    }
+    
+   
+}
+- (NSRange) selectedRange:(UITextField *)textField
+{
+    UITextPosition* beginning = textField.beginningOfDocument;
+    
+    UITextRange* selectedRange = textField.selectedTextRange;
+    UITextPosition* selectionStart = selectedRange.start;
+    UITextPosition* selectionEnd = selectedRange.end;
+    
+    const NSInteger location = [textField offsetFromPosition:beginning toPosition:selectionStart];
+    const NSInteger length = [textField offsetFromPosition:selectionStart toPosition:selectionEnd];
+    
+    return NSMakeRange(location, length);
+}
 #pragma mark - 输入框文本改变事件
 - (void)textDidChange:(NSNotification *)notification {
     NSInteger idNumb = 0;

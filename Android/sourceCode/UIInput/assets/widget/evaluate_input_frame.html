@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <title>title</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+    <style>
+        html, body {
+            background-color: white;
+        }
+        /*#header {
+        	height: 48px;
+        	line-height: 48px;
+        	background: -webkit-linear-gradient(left, #1CC2FF , #42D8F8);
+            background: linear-gradient(to right, #1CC2FF, #42D8F8);
+            color: #fff;
+            overflow: hidden;
+        }*/
+        #footer {
+            height: 48px;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            box-sizing: border-box;
+            background: #fff;
+            display: -webkit-flex;
+            align-items: center;
+        }
+        #footer .f_left span {
+            height: 32px;
+            line-height: 32px;
+            background: #f4f5f6;
+            border-radius: 20px;
+            width:100%;
+            padding-left: 35px;
+            box-sizing: border-box;
+        }
+        #footer .f_left {
+            height: 32px;
+            -webkit-flex:1;
+            padding:0 15px;
+            position: relative;
+        }
+        #footer .f_right {
+            margin-right: 15px;
+            padding:0 20px;
+            height: 32px;
+            line-height: 32px;
+            border-radius: 25px;
+            background: #1ac0fd;
+            color: #fff;
+            font-size: 15px;
+        }
+        .write_icon {
+            position: absolute;
+            left: 30px;
+            top:9px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div id="footer">
+        <div class="f_left" name=''><span></span><img class="write_icon" src="../image/write.png"></div>
+        <div class="f_right" tapmode onclick='fnSendComment()'>发送</div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/zepto.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript">
+    apiready = function(){
+ 
+    
+        UIInput = api.require('UIInput');
+        fnOpenInput("")
+
+        input_val='';
+
+        //获取焦点
+        UIInput.addEventListener({
+            name: 'becomeFirstResponder'
+        }, function(ret) {
+            UIInput.resetPosition({
+    			position: {
+        			x: 0,
+        			y: ret.keyboardHeight - 32
+    			}
+			});
+        });
+
+        //失去焦点
+        UIInput.addEventListener({
+            name: 'resignFirstResponder'
+        }, function(ret) {
+           UIInput.resetPosition({
+    			position: {
+        			x: 0,
+        			y: api.frameHeight - 32
+    			}
+			});
+        });
+
+    };
+
+    function fnOpenInput(place) {
+        UIInput.open({
+            rect: {
+                x: 0,
+                y: api.frameHeight - 32,
+                w: api.frameWidth,
+                h: 32
+            },
+            styles: {
+                bgColor: '#f4f5f6',
+                size: 12,
+                color: '#333',
+                placeholder: {
+                    color: '#999'
+                }
+            },
+            autoFocus: false,
+            maxRows: 4,
+            maxStringLength:250,
+            keyboardType:'default',
+            placeholder: '写留言',
+            fixedOn: api.frameName
+        }, function(ret) {
+            input_id=ret.id;
+        });
+    }
+
+    function fnSendComment(){
+        content='';
+        UIInput.value(function(ret) {
+            content=ret.msg.replace(/(^\s*)|(\s*$)/g, "");
+            if(content.length==0){
+                toast('留言不能为空');
+                return;
+            }
+            if(!user){
+                toast('请先登录');
+                setTimeout(function(){
+                    fnOpenLogin();
+                },1500)
+                return;
+            }
+            api.execScript({
+                name: 'evaluate_list',
+                script: "fnSendComment('"+content+"');"
+            });
+        });
+    }
+
+    function fnResetInput(mes) {
+        UIInput.popupKeyboard({
+            id:input_id
+        });
+        input_val = mes?mes:'';
+        UIInput.value({
+            msg: input_val
+        });
+    }
+    
+</script>
+</html>

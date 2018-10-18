@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <style>
+          .item-container{
+  			 width:100%;
+  			 height:40px;
+  			 background-color:#ccc;
+  		   }
+  		   
+  		   .item-container:active{
+  			 opacity:0.5;
+  		   }
+  		   
+  		  .item-image{
+  		     position:absolute;
+  		   	 width:40px;
+  		   	 height:40px;
+  		   	 right:10px;
+  		   	 margin-right:30px;
+  		   }
+  		   
+  		  .item-text{
+  		     display:inline-block;
+  		   	 width:80px;
+  		   	 height:40px;
+  		   	 line-height:40px;
+  		   }
+  		   
+      </style>
+  </head>
+  <body>
+  
+  	<div class="item-container">
+  		<div class="item-text"> 打开输入框 </div>
+  	    <img class="item-image" src="image/refresh.png"/>
+  	</div>
+  	
+  	
+  	
+  	<div class="item-container">
+  		<div class="item-text"> 设置占位 </div>
+  	    <img class="item-image" src="image/refresh.png"/>
+  	</div>
+  	
+  	
+  	<div class="item-container">
+  		<div class="item-text"> 监听事件 </div>
+  	    <img class="item-image" src="image/refresh.png"/>
+  	</div>
+  	
+  	
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript">
+  
+      var inputId;
+	
+      apiready = function(){
+        var UIInput = api.require('UIInput');
+        UIInput.open({
+            rect: {
+                x: 0,
+                y: 40,
+                w: api.winWidth,
+                h: 40
+            },
+            styles: {
+                bgColor: '#ff4d00',
+                size: 14,
+                color: '#000',
+                placeholder: {
+                    color: '#ccc'
+                }
+            },
+            autoFocus: false,
+            maxRows: 1,
+            placeholder: '这是一个输入框',
+            maxStringLength: 5,
+            // keyboardType: 'done',
+            fixedOn: api.frameName
+        }, function(ret) {
+        	if(ret.eventType == 'show'){
+        		inputId = ret.id;
+        	}
+            if (ret.eventType == 'change') {
+            } else {
+                // alert(JSON.stringify(ret));
+            }
+        });
+
+        UIInput.open({
+            rect: {
+                x: 0,
+                y: 100,
+                w: api.winWidth,
+                h: 40
+            },
+            styles: {
+                bgColor: '#ff4d00',
+                size: 14,
+                color: '#000',
+                placeholder: {
+                    color: '#ccc'
+                }
+            },
+            autoFocus: false,
+            maxRows: 1,
+            placeholder: '这是一个输入框',
+            maxStringLength: 3,
+            // keyboardType: 'done',
+            fixedOn: api.frameName
+        }, function(ret) {
+            if (ret.eventType == 'change') {
+            } else {
+                // alert(JSON.stringify(ret));
+            }
+        });
+      };
+      
+      
+      function rePosition(){
+        var UIInput = api.require('UIInput');
+      	UIInput.resetPosition({
+            id:inputId,
+            position:{
+                x:0,
+                y:api.frameHeight - 40
+            }
+        })
+      }
+  </script>
+  </html>

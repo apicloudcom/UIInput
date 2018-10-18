@@ -47,7 +47,7 @@
         <!-- moduleDemo模块中用到的Activity -->
         <activity
             android:name="com.apicloud.moduleDemo.DemoActivity"
-        	android:screenOrientation="portrait"
+        	android:screenOrientation="landscape"
 			android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar"
         	android:configChanges="orientation|locale" />
     </application>

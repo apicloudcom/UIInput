@@ -60,6 +60,8 @@ public class Config {
 	public int maxStringLength = -1;
 	
 	public String alignment = "left";
+	
+	public boolean isCenterVertical = true;
 
 	public Config(Context context, UZModuleContext uzContext) {
 
@@ -115,6 +117,8 @@ public class Config {
 		if (!uzContext.isNull("placeholder")) {
 			placeHolder = uzContext.optString("placeholder");
 		}
+		
+		isCenterVertical = uzContext.optBoolean("isCenterVertical", true);
 
 		if (!uzContext.isNull("autoFocus")) {
 			autoFocus = uzContext.optBoolean("autoFocus");

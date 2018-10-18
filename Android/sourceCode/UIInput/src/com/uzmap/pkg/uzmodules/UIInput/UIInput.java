@@ -4,7 +4,6 @@
  * Licensed under the terms of the The MIT License (MIT).
  * Please see the license.html included with this distribution for details.
  */
-
 package com.uzmap.pkg.uzmodules.UIInput;
 
 import java.io.IOException;
@@ -13,6 +12,7 @@ import java.io.InputStream;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,6 +20,7 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Selection;
 import android.text.TextUtils;
@@ -63,10 +64,19 @@ public class UIInput extends UZModule {
 
 	public void jsmethod_open(final UZModuleContext uzContext) {
 		
-		getKeyboardHeight();
-		final Config mConfig = new Config(getContext(), uzContext);
+//		// ================
+//		final Config mConfig = new Config(context(), uzContext);
+//		XEditText input = new XEditText(context());
+//		
+//		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+//		insertViewToCurWindow(input, params, mConfig.fixedOn, mConfig.fixed);
+//		// ================
 		
-		RelativeLayout mContainerLayout = new RelativeLayout(getContext());
+		
+		getKeyboardHeight();
+		final Config mConfig = new Config(context(), uzContext);
+		
+		RelativeLayout mContainerLayout = new RelativeLayout(context());
 		
 		CallbackContextWrapper wrapper = new CallbackContextWrapper();
 		mContainerLayout.setTag(wrapper);
@@ -80,7 +90,7 @@ public class UIInput extends UZModule {
 		params.topMargin = mConfig.y;
 
 		RelativeLayout.LayoutParams editParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-		final XEditText mInputField = new XEditText(getContext());
+		final EditText mInputField = new EditText(context());
 		mInputField.setId(EDIT_TEXT_ID);
 		mInputField.setLayoutParams(editParam);
 		mContainerLayout.addView(mInputField);
@@ -133,34 +143,43 @@ public class UIInput extends UZModule {
 		mInputField.setHintTextColor(mConfig.placeHolderColor);
 		mInputField.setPadding(UZUtility.dipToPix(5), 0, 0, 0);
 		
-		if(mConfig.maxStringLength <= 0){
-			mInputField.setMaxChars(Integer.MAX_VALUE);
-		} else {
-			mInputField.setMaxChars(mConfig.maxStringLength);
+		if(mConfig.maxStringLength > 0){
+			mInputField.setFilters(new InputFilter[]{new InputFilter.LengthFilter(mConfig.maxStringLength)});
 		}
 		
-
 		mInputField.setHint(mConfig.placeHolder);
-
+		
 		if (mConfig.maxLines <= 1) {
 			mInputField.setSingleLine(true);
-			mInputField.setGravity(Gravity.CENTER_VERTICAL);
+			// mInputField.setGravity(Gravity.CENTER_VERTICAL);
 		} else {
 			mInputField.setSingleLine(false);
 			mInputField.setMaxLines(mConfig.maxLines);
-			mInputField.setGravity(Gravity.CENTER_VERTICAL);
+			// mInputField.setGravity(Gravity.CENTER_VERTICAL);
 		}
 		
 		if("left".equals(mConfig.alignment)){
-			mInputField.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
+			if(mConfig.isCenterVertical){
+				mInputField.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
+			} else {
+				mInputField.setGravity(Gravity.LEFT);
+			}
 		}
 	
 		if("center".equals(mConfig.alignment)){
-			mInputField.setGravity(Gravity.CENTER | Gravity.CENTER_VERTICAL);
+			if(mConfig.isCenterVertical){
+				mInputField.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+			} else {
+				mInputField.setGravity(Gravity.CENTER_HORIZONTAL);
+			}
 		}
 	
 		if("right".equals(mConfig.alignment)){
-			mInputField.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+			if(mConfig.isCenterVertical){
+				mInputField.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+			} else {
+				mInputField.setGravity(Gravity.RIGHT);
+			}
 		}
 		
 		if (mConfig.autoFocus) {
@@ -172,10 +191,11 @@ public class UIInput extends UZModule {
 				@Override
 				
 				public void run() {
-					if(getContext() == null || getContext().getWindow() == null){
+					Context c = context();
+					if(c == null || !(c instanceof Activity)){
 						return;
 					}
-					getContext().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+					((Activity)c).getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 					showSoftInputKeyBoard(mInputField);
 				}
 			}, 300);
@@ -184,10 +204,11 @@ public class UIInput extends UZModule {
 			new Handler().postDelayed(new Runnable() {
 				@Override
 				public void run() {
-					if(getContext() == null || getContext().getWindow() == null){
+					Context c = context();
+					if(c == null || !(c instanceof Activity)){
 						return;
 					}
-					getContext().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+					((Activity)c).getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 				}
 			}, 300); 
 		}
@@ -204,7 +225,7 @@ public class UIInput extends UZModule {
 		RelativeLayout.LayoutParams imageParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 		imageParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
 		imageParams.addRule(RelativeLayout.CENTER_VERTICAL);
-		final ImageView leftIcon = new ImageView(getContext());
+		final ImageView leftIcon = new ImageView(context());
 		leftIcon.setLayoutParams(imageParams);
 		leftIcon.setScaleType(ScaleType.CENTER_CROP);
 		final Bitmap bitmap = getBitmap(mConfig.placeHolderIcon);
@@ -215,7 +236,6 @@ public class UIInput extends UZModule {
 		}
 
 		mInputField.addTextChangedListener(new TextWatcher() {
-			
 			@Override
 			public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
 				
@@ -223,7 +243,6 @@ public class UIInput extends UZModule {
 					try{
 						mInputField.setText(mInputField.getText().subSequence(0, mConfig.maxStringLength));
 						mInputField.setSelection(mInputField.getText().toString().trim().length());
-						
 						return;
 					} catch(Exception e){
 						e.printStackTrace();
@@ -245,7 +264,6 @@ public class UIInput extends UZModule {
 		});
 
 		mInputField.setOnEditorActionListener(new OnEditorActionListener() {
-
 			@Override
 			public boolean onEditorAction(TextView arg0, int arg1, KeyEvent arg2) {
 				if (arg1 == EditorInfo.IME_ACTION_SEARCH) {
@@ -255,8 +273,11 @@ public class UIInput extends UZModule {
 			}
 		});
 		
-		mContainerLayout.addView(leftIcon);
+	    //mContainerLayout.addView(leftIcon);
 		mInputField.setBackgroundColor(mConfig.bgColor);
+		mInputField.setClickable(true);
+		
+		mContainerLayout.setClickable(true);
 		
 		insertViewToCurWindow(mContainerLayout, params, mConfig.fixedOn, mConfig.fixed);
 		callback(uzContext, count, Config.EVENT_SHOW, true);
@@ -266,7 +287,7 @@ public class UIInput extends UZModule {
 		int id = uzContext.optInt("id");
 		View layout = views.get(id); 
 		if(layout != null){
-			XEditText mInputField = (XEditText)layout.findViewById(EDIT_TEXT_ID);
+			EditText mInputField = (EditText)layout.findViewById(EDIT_TEXT_ID);
 			if(mInputField != null){
 				hideSoftInputKeyBoard(mInputField);
 			}
@@ -279,6 +300,24 @@ public class UIInput extends UZModule {
 		View layout = views.get(id);
 		if(layout != null){
 			layout.setVisibility(View.GONE);
+		}
+	}
+	
+	public void jsmethod_getSelectedRange(UZModuleContext uzContext){
+		int id = uzContext.optInt("id");
+		final View layout = views.get(id);
+		if(layout == null){
+			return;
+		}
+		
+		final EditText mInputField = (EditText)layout.findViewById(EDIT_TEXT_ID);
+		
+		JSONObject ret = new JSONObject();
+		try {
+			ret.put("location", mInputField.getSelectionStart());
+			uzContext.success(ret, false);
+		} catch (JSONException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -319,7 +358,7 @@ public class UIInput extends UZModule {
 		if(layout == null){
 			return;
 		}
-		XEditText mInputField = (XEditText)layout.findViewById(EDIT_TEXT_ID);
+		EditText mInputField = (EditText)layout.findViewById(EDIT_TEXT_ID);
 		if(mInputField != null) {
 			int index = 0;
 			if (!TextUtils.isEmpty(mInputField.getText().toString())) {
@@ -368,7 +407,7 @@ public class UIInput extends UZModule {
 		}
 		
 		
-		final XEditText mInputField = (XEditText)layout.findViewById(EDIT_TEXT_ID);
+		final EditText mInputField = (EditText)layout.findViewById(EDIT_TEXT_ID);
 		mInputField.setOnFocusChangeListener(new OnFocusChangeListener() {
 			
 			@Override
@@ -462,7 +501,7 @@ public class UIInput extends UZModule {
 		if(layout == null){
 			return;
 		}
-		XEditText mInputField = (XEditText)layout.findViewById(EDIT_TEXT_ID);
+		EditText mInputField = (EditText)layout.findViewById(EDIT_TEXT_ID);
 		if (mInputField != null && !uzContext.isNull("msg")) {
 			String msg = uzContext.optString("msg");
 			mInputField.setText(msg);
@@ -535,7 +574,7 @@ public class UIInput extends UZModule {
 
 			@Override
 			public void run() {
-				final XEditText mInputField = (XEditText)layout.findViewById(EDIT_TEXT_ID);
+				final EditText mInputField = (EditText)layout.findViewById(EDIT_TEXT_ID);
 				if(mInputField != null){
 					forceRequestFocus(mInputField);
 					showSoftInputKeyBoard(mInputField);
@@ -549,15 +588,14 @@ public class UIInput extends UZModule {
 	private int mKeyboardHeight = -1;
 	
 	public void getKeyboardHeight(){
-		mContext.getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+		((Activity)context()).getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
 			
 			@Override
 			public void onGlobalLayout() {
-				
 				Rect rect = new Rect();
-				if(mContext != null){
-					mContext.getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
-					mKeyboardHeight = ViewUtil.getScreenHeight(mContext) - (rect.bottom - rect.top);
+				if(context() != null){
+					((Activity)context()).getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
+					mKeyboardHeight = ViewUtil.getScreenHeight(context()) - (rect.bottom - rect.top);
 				}
 			}
 		});
@@ -571,7 +609,7 @@ public class UIInput extends UZModule {
 			return;
 		}
 		
-		XEditText mInputField = (XEditText)layout.findViewById(EDIT_TEXT_ID);
+		EditText mInputField = (EditText)layout.findViewById(EDIT_TEXT_ID);
 		if(mInputField != null){
 			hideSoftInputKeyBoard(mInputField);
 		}
